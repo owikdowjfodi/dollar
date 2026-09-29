@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-locale="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>匯率智庫 · FX Insight — 人民幣匯率與香港中學選校分析</title>
+<meta name="description" content="雙銀行人民幣匯率即時對比、歷史走勢、到價推播、雙向換匯計算機，以及香港中學選校智能分析與市場預測。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Cpath d='M7 20l5-6 4 4 9-10' stroke='%232ee6a8' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<a class="skip-link" href="#main" data-i18n="a11y.skip">跳至主要內容</a>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <div class="brand">
+      <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="9" fill="url(#g)"></rect>
+        <path d="M7 20l5-6 4 4 9-10" stroke="#0b1220" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2ee6a8"></stop><stop offset="1" stop-color="#4aa8ff"></stop>
+        </linearGradient></defs>
+      </svg>
+      <div class="brand__text">
+        <strong data-i18n="app.name">匯率智庫</strong>
+        <span data-i18n="app.tagline">人民幣匯率 × 香港選校分析</span>
+      </div>
+    </div>
+
+    <div class="topbar__actions">
+      <div class="lang" role="group" aria-label="Language">
+        <button class="lang__btn" type="button" data-lang="zh-Hant" aria-pressed="true">繁</button>
+        <button class="lang__btn" type="button" data-lang="zh-Hans" aria-pressed="false">简</button>
+        <button class="lang__btn" type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button class="icon-btn" type="button" id="themeToggle" data-i18n-title="a11y.theme" title="切換主題">
+        <span class="icon-btn__icon" aria-hidden="true">◐</span>
+      </button>
+    </div>
+  </div>
+
+  <nav class="tabs" aria-label="主要導覽">
+    <div class="tabs__inner" id="tablist" role="tablist">
+      <button role="tab" class="tab is-active" data-tab="rates" aria-selected="true" aria-controls="panel-rates">
+        <span class="tab__dot" style="--dot:#2ee6a8"></span><span data-i18n="nav.rates">即時匯率</span></button>
+      <button role="tab" class="tab" data-tab="trends" aria-selected="false" aria-controls="panel-trends">
+        <span class="tab__dot" style="--dot:#4aa8ff"></span><span data-i18n="nav.trends">歷史走勢</span></button>
+      <button role="tab" class="tab" data-tab="calculator" aria-selected="false" aria-controls="panel-calculator">
+        <span class="tab__dot" style="--dot:#ffc857"></span><span data-i18n="nav.calculator">換匯計算機</span></button>
+      <button role="tab" class="tab" data-tab="alerts" aria-selected="false" aria-controls="panel-alerts">
+        <span class="tab__dot" style="--dot:#ff7a7a"></span><span data-i18n="nav.alerts">到價提醒</span></button>
+      <button role="tab" class="tab" data-tab="schools" aria-selected="false" aria-controls="panel-schools">
+        <span class="tab__dot" style="--dot:#b98cff"></span><span data-i18n="nav.schools">選校分析</span></button>
+      <button role="tab" class="tab" data-tab="spec" aria-selected="false" aria-controls="panel-spec">
+        <span class="tab__dot" style="--dot:#7d8ba1"></span><span data-i18n="nav.spec">產品規格</span></button>
+    </div>
+  </nav>
+</header>
+
+<main id="main" class="wrap">
+
+  <!-- ======================= RATES ======================= -->
+  <section id="panel-rates" class="panel is-active" role="tabpanel" aria-labelledby="tab-rates">
+    <div class="row row--head">
+      <div>
+        <h1 class="h1" data-i18n="rates.title">雙銀行人民幣匯率對比</h1>
+        <p class="sub" data-i18n="rates.sub">中國銀行（香港）與滙豐銀行最新牌價，同畫面橫向對比，較優價格自動標示。</p>
+      </div>
+      <div class="livebar">
+        <span class="pulse" aria-hidden="true"></span>
+        <span data-i18n="rates.updated">最後更新</span>
+        <time id="lastUpdated">—</time>
+        <button class="btn btn--ghost btn--sm" type="button" id="refreshRates">
+          <span data-i18n="rates.refresh">立即更新</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="notice" id="dataNotice">
+      <strong data-i18n="rates.noticeTitle">示範數據模式</strong>
+      <span data-i18n="rates.noticeBody">本頁目前使用內建模擬報價引擎（與真實牌價結構一致），可離線運作；接上 server/scraper.js 後即改為真實抓取。</span>
+    </div>
+
+    <div class="coinsw" role="group" aria-labelledby="coinLabel">
+      <span class="coinsw__label" id="coinLabel" data-i18n="rates.pair">報價顯示方式</span>
+      <button class="chip is-active" data-unit="hkdPer100" type="button" data-i18n="unit.per100">每 100 人民幣兌 X 港元</button>
+      <button class="chip" data-unit="cnyPerHkd" type="button" data-i18n="unit.perHkd">每 1 港元兌 Y 人民幣</button>
+      <label class="switch">
+        <input type="checkbox" id="autoTick" checked>
+        <span data-i18n="rates.autoTick">模擬即時跳動</span>
+      </label>
+    </div>
+    <p class="hint" style="margin:-6px 0 16px" data-i18n="rates.howToRead"></p>
+
+    <div class="grid grid--banks" id="bankCards"></div>
+
+    <div class="card">
+      <div class="card__head">
+        <h2 class="h2" data-i18n="rates.matrixTitle">全牌價對比矩陣</h2>
+        <p class="sub" data-i18n="rates.matrixSub">綠 = 對客戶較有利（買入較高／賣出較低），紅 = 較不利。差價以每 100 人民幣計。</p>
+      </div>
+      <div class="table-scroll">
+        <table class="table" id="rateMatrix">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint" id="spreadHint"></p>
+    </div>
+
+    <div class="grid grid--2">
+      <div class="card">
+        <h2 class="h2" data-i18n="rates.bestTitle">最優換匯建議</h2>
+        <div id="bestAdvice" class="advice"></div>
+      </div>
+      <div class="card">
+        <h2 class="h2" data-i18n="rates.spreadTitle">買賣差價（銀行利潤）</h2>
+        <div id="spreadBars" class="bars"></div>
+        <p class="hint" data-i18n="rates.spreadHint">差價越窄，換匯成本越低。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= TRENDS ======================= -->
+  <section id="panel-trends" class="panel" role="tabpanel" aria-labelledby="tab-trends" hidden>
+    <div class="row row--head">
+      <div>
+        <h1 class="h1" data-i18n="trends.title">歷史走勢與趨勢分析</h1>
+        <p class="sub" data-i18n="trends.sub">7 / 30 / 90 / 365 天人民幣兌港元走勢，自動計算最高、最低與平均價。</p>
+      </div>
+      <div class="seg" id="periodSeg" role="group" aria-label="Period">
+        <button class="seg__btn is-active" data-days="7" type="button">7D</button>
+        <button class="seg__btn" data-days="30" type="button">30D</button>
+        <button class="seg__btn" data-days="90" type="button">90D</button>
+        <button class="seg__btn" data-days="365" type="button">1Y</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card__head card__head--inline">
+        <h2 class="h2" data-i18n="trends.chartTitle">走勢圖</h2>
+        <div class="legend">
+          <span class="legend__item"><i style="--c:#2ee6a8"></i><span data-i18n="bank.bocShort">中銀香港</span></span>
+          <span class="legend__item"><i style="--c:#4aa8ff"></i><span data-i18n="bank.hsbcShort">滙豐</span></span>
+          <span class="legend__item"><i style="--c:#ffc857"></i><span data-i18n="trends.ma7">7 日移動平均</span></span>
+        </div>
+      </div>
+      <div class="chartbox">
+        <canvas id="trendChart" height="320" role="img" aria-label="trend chart"></canvas>
+        <div class="tooltip" id="chartTooltip" hidden></div>
+      </div>
+      <div class="chart-ctrl">
+        <label class="field">
+          <span data-i18n="trends.metric">指標</span>
+          <select id="metricSelect"></select>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="showMA" checked>
+          <span data-i18n="trends.showMA">顯示移動平均</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="grid grid--3" id="statCards"></div>
+
+    <div class="card">
+      <div class="card__head">
+        <h2 class="h2" data-i18n="trends.insightTitle">趨勢解讀</h2>
+      </div>
+      <div id="trendInsight" class="advice"></div>
+    </div>
+  </section>
+
+  <!-- ======================= CALCULATOR ======================= -->
+  <section id="panel-calculator" class="panel" role="tabpanel" aria-labelledby="tab-calculator" hidden>
+    <div class="row row--head">
+      <div>
+        <h1 class="h1" data-i18n="calc.title">雙向即時換匯計算機</h1>
+        <p class="sub" data-i18n="calc.sub">輸入金額，一鍵切換方向；可自由選擇套用中國銀行或滙豐銀行的最新牌價。</p>
+      </div>
+    </div>
+
+    <div class="grid grid--calc">
+      <div class="card">
+        <div class="calc__from">
+          <label class="field">
+            <span data-i18n="calc.from">由</span>
+            <select id="calcFrom">
+              <option value="HKD">HKD 港幣</option>
+              <option value="CNY">CNY 人民幣</option>
+            </select>
+          </label>
+          <button class="icon-btn icon-btn--round" type="button" id="swapDir" data-i18n-title="calc.swap" title="切換方向">⇅</button>
+          <label class="field">
+            <span data-i18n="calc.to">兌</span>
+            <select id="calcTo">
+              <option value="CNY">CNY 人民幣</option>
+              <option value="HKD">HKD 港幣</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field field--big">
+          <span data-i18n="calc.amount">金額</span>
+          <input type="text" inputmode="decimal" id="calcAmount" value="10000" autocomplete="off">
+        </label>
+        <div class="quick" id="quickAmounts"></div>
+
+        <div class="field-row">
+          <label class="field">
+            <span data-i18n="calc.bank">套用銀行</span>
+            <select id="calcBank">
+              <option value="BOC">中國銀行（香港）</option>
+              <option value="HSBC">滙豐銀行</option>
+              <option value="BEST">最優價（自動選行）</option>
+            </select>
+          </label>
+          <label class="field">
+            <span data-i18n="calc.type">牌價類型</span>
+            <select id="calcType">
+              <option value="tt">現匯</option>
+              <option value="cash">現鈔</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="card card--result">
+        <div class="result__label" data-i18n="calc.result">換算結果</div>
+        <output class="result__value" id="calcResult">—</output>
+        <div class="result__meta" id="calcMeta"></div>
+        <div class="result__compare" id="calcCompare"></div>
+        <p class="hint" data-i18n="calc.hint">計算已含銀行買賣價差；實際成交以銀行即時牌價為準。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="h2" data-i18n="calc.tableTitle">兩行換算對照</h2>
+      <div class="table-scroll"><table class="table" id="calcTable"><thead></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ======================= ALERTS ======================= -->
+  <section id="panel-alerts" class="panel" role="tabpanel" aria-labelledby="tab-alerts" hidden>
+    <div class="row row--head">
+      <div>
+        <h1 class="h1" data-i18n="alerts.title">智慧到價推播通知</h1>
+        <p class="sub" data-i18n="alerts.sub">自訂目標匯率（例如：滙豐人民幣賣出價跌至 0.9100），達標即發出 App 內推播與系統通知。</p>
+      </div>
+      <button class="btn btn--ghost btn--sm" type="button" id="askNotifyPerm" data-i18n="alerts.perm">開啟系統通知權限</button>
+    </div>
+
+    <div class="grid grid--alerts">
+      <div class="card">
+        <h2 class="h2" data-i18n="alerts.new">新增提醒</h2>
+        <div class="field-row">
+          <label class="field"><span data-i18n="alerts.bank">銀行</span>
+            <select id="alertBank">
+              <option value="BOC">中國銀行（香港）</option>
+              <option value="HSBC">滙豐銀行</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="alerts.rateType">牌價</span>
+            <select id="alertRateType"></select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span data-i18n="alerts.condition">條件</span>
+            <select id="alertCond">
+              <option value="below" data-i18n="alerts.below">跌至或低於</option>
+              <option value="above" data-i18n="alerts.above">升至或高於</option>
+            </select>
+          </label>
+          <label class="field"><span data-i18n="alerts.target">目標價</span>
+            <input type="text" inputmode="decimal" id="alertTarget" autocomplete="off">
+          </label>
+        </div>
+        <label class="field"><span data-i18n="alerts.unit">目標價單位</span>
+          <select id="alertUnit"></select>
+        </label>
+        <label class="field"><span data-i18n="alerts.note">備註（可選）</span>
+          <input type="text" id="alertNote" maxlength="60" autocomplete="off">
+        </label>
+        <button class="btn btn--primary" type="button" id="addAlert" data-i18n="alerts.add">建立提醒</button>
+        <p class="hint" id="alertFormHint"></p>
+      </div>
+
+      <div class="card">
+        <h2 class="h2" data-i18n="alerts.active">已建立的提醒</h2>
+        <ul class="alertlist" id="alertList"></ul>
+        <div class="empty" id="alertEmpty" data-i18n="alerts.empty">尚未建立任何提醒。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="h2" data-i18n="alerts.log">推播紀錄</h2>
+      <ul class="loglist" id="alertLog"></ul>
+      <div class="empty" id="logEmpty" data-i18n="alerts.logEmpty">尚無推播紀錄。</div>
+    </div>
+  </section>
+
+  <!-- ======================= SCHOOLS ======================= -->
+  <section id="panel-schools" class="panel" role="tabpanel" aria-labelledby="tab-schools" hidden>
+    <div class="row row--head">
+      <div>
+        <h1 class="h1" data-i18n="schools.title">香港中學選校智能分析</h1>
+        <p class="sub" data-i18n="schools.sub">依 Band 別檢視學校，就五大維度評分，並產生未來 3–5 年模擬市場預測。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="filters">
+        <label class="field field--grow">
+          <span data-i18n="schools.search">搜尋學校</span>
+          <input type="search" id="schoolSearch" placeholder="例：皇仁 / Queen's" autocomplete="off">
+        </label>
+        <label class="field">
+          <span data-i18n="schools.band">Band 別</span>
+          <select id="bandFilter"><option value="">All</option></select>
+        </label>
+        <label class="field">
+          <span data-i18n="schools.type">學校類型</span>
+          <select id="typeFilter"><option value="">All</option></select>
+        </label>
+        <label class="field">
+          <span data-i18n="schools.district">地區</span>
+          <select id="districtFilter"><option value="">All</option></select>
+        </label>
+      </div>
+      <div class="countline" id="schoolCount"></div>
+    </div>
+
+    <div class="grid grid--schools">
+      <div class="card card--list">
+        <h2 class="h2" data-i18n="schools.list">學校列表</h2>
+        <ul class="schoollist" id="schoolList"></ul>
+      </div>
+
+      <div id="schoolDetail" class="school-detail">
+        <div class="empty" data-i18n="schools.selectHint">請從左側選擇一間學校開始分析。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= SPEC ======================= -->
+  <section id="panel-spec" class="panel" role="tabpanel" aria-labelledby="tab-spec" hidden>
+    <div class="row row--head">
+      <div>
+        <h1 class="h1" data-i18n="spec.title">產品規格與技術架構</h1>
+        <p class="sub" data-i18n="spec.sub">UI/UX 規劃、資料結構設計、核心程式碼範例（Node.js 抓取 + 前端對比組件 + Widget）。</p>
+      </div>
+      <a class="btn btn--ghost btn--sm" href="docs/SPEC.md" download data-i18n="spec.download">下載完整規格 (Markdown)</a>
+    </div>
+
+    <nav class="subtabs" id="specTabs">
+      <button class="subtabs__btn is-active" data-spec="ux" type="button" data-i18n="spec.ux">UI/UX 規劃</button>
+      <button class="subtabs__btn" data-spec="data" type="button" data-i18n="spec.data">資料結構</button>
+      <button class="subtabs__btn" data-spec="api" type="button" data-i18n="spec.api">抓取 API</button>
+      <button class="subtabs__btn" data-spec="front" type="button" data-i18n="spec.front">前端組件</button>
+      <button class="subtabs__btn" data-spec="widget" type="button" data-i18n="spec.widget">桌面小工具</button>
+    </nav>
+
+    <div class="card specbody" id="specBody"></div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__inner">
+    <span data-i18n="foot.note">示範專案 · 報價為模擬數據，非投資或升學建議。</span>
+    <span class="foot__sep">·</span>
+    <a href="docs/SPEC.md" data-i18n="foot.spec">規格文件</a>
+    <span class="foot__sep">·</span>
+    <a href="README.md" data-i18n="foot.readme">執行說明</a>
+  </div>
+</footer>
+
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/spec.js"></script>
+<script src="assets/js/schools.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
